@@ -1,136 +1,143 @@
-# Jenkins-Zero-To-Hero
+🚀 Full CI/CD Pipeline on Azure with Jenkins, SonarQube, DockerHub & ArgoCD (Terraform + Ansible + Minikube)
 
-Are you looking forward to learn Jenkins right from Zero(installation) to Hero(Build end to end pipelines)? then you are at the right place. 
+This project automates a complete CI/CD pipeline deployment using:
 
-## Installation on EC2 Instance
+☁️ Azure Infrastructure (Terraform)
 
-YouTube Video ->
-https://www.youtube.com/watch?v=zZfhAXfBvVA&list=RDCMUCnnQ3ybuyFdzvgv2Ky5jnAA&index=1
+⚙️ Jenkins + SonarQube Setup (Ansible)
 
+🐳 DockerHub for image storage
 
-![Screenshot 2023-02-01 at 5 46 14 PM](https://user-images.githubusercontent.com/43399466/216040281-6c8b89c3-8c22-4620-ad1c-8edd78eb31ae.png)
-
-Install Jenkins, configure Docker as agent, set up cicd, deploy applications to k8s and much more.
-
-## AWS EC2 Instance
-
-- Go to AWS Console
-- Instances(running)
-- Launch instances
-
-<img width="994" alt="Screenshot 2023-02-01 at 12 37 45 PM" src="https://user-images.githubusercontent.com/43399466/215974891-196abfe9-ace0-407b-abd2-adcffe218e3f.png">
-
-### Install Jenkins.
-
-Pre-Requisites:
- - Java (JDK)
-
-### Run the below commands to install Java and Jenkins
-
-Install Java
-
-```
-sudo apt update
-sudo apt install openjdk-17-jre
-```
-
-Verify Java is Installed
-
-```
-java -version
-```
-
-Now, you can proceed with installing Jenkins
-
-```
-curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update
-sudo apt-get install jenkins
-```
-
-**Note: ** By default, Jenkins will not be accessible to the external world due to the inbound traffic restriction by AWS. Open port 8080 in the inbound traffic rules as show below.
-
-- EC2 > Instances > Click on <Instance-ID>
-- In the bottom tabs -> Click on Security
-- Security groups
-- Add inbound traffic rules as shown in the image (you can just allow TCP 8080 as well, in my case, I allowed `All traffic`).
-
-<img width="1187" alt="Screenshot 2023-02-01 at 12 42 01 PM" src="https://user-images.githubusercontent.com/43399466/215975712-2fc569cb-9d76-49b4-9345-d8b62187aa22.png">
+🚀 Argo CD + Minikube for Kubernetes deployment
 
 
-### Login to Jenkins using the below URL:
+🧱 Step 1: Provision Azure Resources Using Terraform
 
-http://<ec2-instance-public-ip-address>:8080    [You can get the ec2-instance-public-ip-address from your AWS EC2 console page]
+📁 Navigate to the Terraform folder:
 
-Note: If you are not interested in allowing `All Traffic` to your EC2 instance
-      1. Delete the inbound traffic rule for your instance
-      2. Edit the inbound traffic rule to only allow custom TCP port `8080`
-  
-After you login to Jenkins, 
-      - Run the command to copy the Jenkins Admin Password - `sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
-      - Enter the Administrator password
-      
-<img width="1291" alt="Screenshot 2023-02-01 at 10 56 25 AM" src="https://user-images.githubusercontent.com/43399466/215959008-3ebca431-1f14-4d81-9f12-6bb232bfbee3.png">
+cd terraform/
 
-### Click on Install suggested plugins
+🔧 Initialize Terraform
 
-<img width="1291" alt="Screenshot 2023-02-01 at 10 58 40 AM" src="https://user-images.githubusercontent.com/43399466/215959294-047eadef-7e64-4795-bd3b-b1efb0375988.png">
+terraform init
 
-Wait for the Jenkins to Install suggested plugins
+🚀 Apply the Terraform Configuration
 
-<img width="1291" alt="Screenshot 2023-02-01 at 10 59 31 AM" src="https://user-images.githubusercontent.com/43399466/215959398-344b5721-28ec-47a5-8908-b698e435608d.png">
+terraform apply
 
-Create First Admin User or Skip the step [If you want to use this Jenkins instance for future use-cases as well, better to create admin user]
+👉 Confirm with yes when prompted.
 
-<img width="990" alt="Screenshot 2023-02-01 at 11 02 09 AM" src="https://user-images.githubusercontent.com/43399466/215959757-403246c8-e739-4103-9265-6bdab418013e.png">
+✅ Terraform will provision the following Azure resources:
 
-Jenkins Installation is Successful. You can now starting using the Jenkins 
+Resource Type | Name | Details
+🌐 Resource Group | jenkins-rg | Region: East US
+🧭 Virtual Network | jenkins-vn | Address Space: 10.0.0.0/16
+🧱 Subnet | jenkins-subnet | Address Prefix: 10.0.1.0/24
+🌍 Public IP | jenkins-public-ip | Dynamic Allocation, Basic SKU
+🔐 Network Security Group | jenkins-nsg | Inbound: 22 (SSH), 8080 (Jenkins), 9000 (SonarQube)
+🌐 Network Interface | jenkins-nic | Dynamic Private IP, Linked Public IP
+💻 Linux VM | jenkins-vm | Ubuntu 22.04 LTS, Standard_F2
 
-<img width="990" alt="Screenshot 2023-02-01 at 11 14 13 AM" src="https://user-images.githubusercontent.com/43399466/215961440-3f13f82b-61a2-4117-88bc-0da265a67fa7.png">
+🌐 Step 2: Get Public IP of the Jenkins VM
 
-## Install the Docker Pipeline plugin in Jenkins:
+Once deployed, retrieve the public IP using:
 
-   - Log in to Jenkins.
-   - Go to Manage Jenkins > Manage Plugins.
-   - In the Available tab, search for "Docker Pipeline".
-   - Select the plugin and click the Install button.
-   - Restart Jenkins after the plugin is installed.
-   
-<img width="1392" alt="Screenshot 2023-02-01 at 12 17 02 PM" src="https://user-images.githubusercontent.com/43399466/215973898-7c366525-15db-4876-bd71-49522ecb267d.png">
-
-Wait for the Jenkins to be restarted.
+az vm list-ip-addresses \
+  --resource-group jenkins-rg \
+  --name jenkins-vm \
+  --query "[].virtualMachine.network.publicIpAddresses[].ipAddress" \
+  --output tsv
 
 
-## Docker Slave Configuration
+or by going to the Azure Portal and navigating to the VM.
 
-Run the below command to Install Docker
 
-```
-sudo apt update
-sudo apt install docker.io
-```
- 
-### Grant Jenkins user and Ubuntu user permission to docker deamon.
+⚙️ Step 3: Install Jenkins & SonarQube Agents Using Ansible
 
-```
-sudo su - 
-usermod -aG docker jenkins
-usermod -aG docker ubuntu
-systemctl restart docker
-```
+📁 Navigate to the Ansible folder:
 
-Once you are done with the above steps, it is better to restart Jenkins.
+cd ansible/
 
-```
-http://<ec2-instance-public-ip>:8080/restart
-```
+📜 Run the Ansible Playbook:
 
-The docker agent configuration is now successful.
+ansible-playbook -i inventory.ini setup-jenkins-sonarqube.yml
+
+✅ This will:
+
+Install Jenkins agent on the Azure VM
+
+Install SonarQube agent on the same VM
+
+Ensure all dependencies and services are up and running
+
+🧠 Notes
+
+Ensure your SSH key (~/.ssh/id_rsa.pub) exists and is added to the VM using Terraform.
+
+Update inventory.ini with the public IP after VM creation.
+
+Ansible requires python3, sshpass, and ansible installed on your local machine.
+
+🏁 Result
+After following all the steps, you’ll have:
+
+✅ A Jenkins CI server running on port 8080
+
+✅ SonarQube agent configured and ready on port 9000
+
+✅ Infrastructure deployed and configured automatically 🎉
+
+
+🧑‍💻 Step 3: Jenkins CI Pipeline with SonarQube + DockerHub
+🔧 Jenkins Plugins to Install
+
+SonarQube Scanner
+
+Docker Pipeline
+
+Type | ID | Description
+Username/Password | dockerhub-creds | DockerHub login
+Secret Text | sonar-token | SonarQube token
+SSH Private Key | github-key | GitHub deploy key (optional)
+
+🧵 Step 4: Argo CD Deployment with Minikube (GitOps)
+📌 Prerequisites
+✅ Install Minikube
+
+✅ Install Argo CD
+
+✅ Create Kubernetes manifests for your app (e.g., deployment.yaml, service.yaml, ingress.yaml)
 
 
 
+📦 Connect App Repo to Argo CD
+Push your K8s YAMLs to a GitHub repo
 
+In Argo CD UI:
+
+Create New App
+
+App Name: your-app
+
+Repo URL: https://github.com/your-org/your-k8s-yamls.git
+
+Path: ./k8s
+
+Cluster: In-cluster
+
+Namespace: default
+
+✅ Argo CD will:
+
+Pull latest K8s manifests from GitHub
+
+Deploy DockerHub image to Minikube
+
+Sync changes automatically (or manually)
+
+
+🔚 Outcome
+✅ Jenkins & SonarQube fully set up on Azure VM
+✅ Docker image pushed to DockerHub
+✅ Argo CD syncs YAML from Git → deploys on Minikube
+✅ Full CI/CD + GitOps pipeline on local and cloud hybrid
