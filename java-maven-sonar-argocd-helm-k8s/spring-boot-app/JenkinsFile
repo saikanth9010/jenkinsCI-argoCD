@@ -6,7 +6,7 @@ pipeline {
     }
   }
   
-  // stages {
+  stages {
   //   stage('Clean Workspace') {
   //     steps {
   //       deleteDir() // Cleans the workspace entirely
