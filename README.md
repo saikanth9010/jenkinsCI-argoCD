@@ -68,6 +68,8 @@ Install Jenkins agent on the Azure VM
 
 Install SonarQube agent on the same VM
 
+Install Docker Deamon on the VM
+
 Ensure all dependencies and services are up and running
 
 🧠 Notes
@@ -95,10 +97,10 @@ SonarQube Scanner
 
 Docker Pipeline
 
-Type | ID | Description
-Username/Password | dockerhub-creds | DockerHub login
-Secret Text | sonar-token | SonarQube token
-SSH Private Key | github-key | GitHub deploy key (optional)
+Type | ID 
+Username/Password | docker
+Secret Text | sonarqube
+Secret Text | github
 
 🧵 Step 4: Argo CD Deployment with Minikube (GitOps)
 📌 Prerequisites
@@ -119,11 +121,11 @@ Create New App
 
 App Name: your-app
 
-Repo URL: https://github.com/your-org/your-k8s-yamls.git
+Repo URL: 
 
-Path: ./k8s
+Path: 
 
-Cluster: In-cluster
+Cluster: 
 
 Namespace: default
 
