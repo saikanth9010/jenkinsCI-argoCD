@@ -6,12 +6,12 @@ pipeline {
     }
   }
   
-  stages {
-    stage('Clean Workspace') {
-      steps {
-        deleteDir() // Cleans the workspace entirely
-      }
-    }
+  // stages {
+  //   stage('Clean Workspace') {
+  //     steps {
+  //       deleteDir() // Cleans the workspace entirely
+  //     }
+  //   }
 
     stage('Checkout') {
       steps {
