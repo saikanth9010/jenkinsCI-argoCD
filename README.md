@@ -137,6 +137,8 @@ Deploy DockerHub image to Minikube
 
 Sync changes automatically (or manually)
 
+Added the webhook to the Jenkins to checkout how that works
+
 
 🔚 Outcome
 ✅ Jenkins & SonarQube fully set up on Azure VM
