@@ -78,9 +78,9 @@
           - gnupg2
         state: present
 
-    - name: Download Jenkins GPG key
-      get_url:
-        url: https://pkg.
+    # - name: Download Jenkins GPG key
+    #   get_url:
+    #     url: https://pkg.
 
     # SonarQube setup (lightweight version)
     - name: Install required packages for SonarQube
@@ -115,10 +115,12 @@
         file_type: directory
       register: sonarqube_folder
 
-    - name: Rename and change permissions
-      command: mv /opt/sonarqube-* /opt/sonarqube 
-      args:
-        creates: /opt/sonarqube
+    - name: Rename and change permissions of /opt/sonarqube-* to /opt/sonarqube
+      file:
+        src: "{{ sonarqube_folder.files[0].path }}"
+        dest: /opt/sonarqube
+        state: link
+        force: yes
 
     - name: Change ownership
       file:
@@ -154,3 +156,32 @@
         name: sonarqube
         enabled: yes
         state: started
+
+    - name: Install docker engine
+      apt:
+        name: docker.io
+        state: present
+    
+    - name: start docker daemon
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+    
+    - name: Add ubuntu user to docker group
+      ansible.builtin.user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Add jenkins user to docker group
+      ansible.builtin.user:
+        name: jenkins
+        groups: docker
+        append: yes
+
+    - name: restart docker daemon
+      systemd:
+        name: docker
+        state: restarted
+   
