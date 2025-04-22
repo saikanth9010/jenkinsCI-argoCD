@@ -9,7 +9,6 @@ pipeline {
   environment {
     RECIPIENT = 'saikanth9010@gmail.com'  // change to your actual email
   }
-
   
   stages {
   //   stage('Clean Workspace') {
