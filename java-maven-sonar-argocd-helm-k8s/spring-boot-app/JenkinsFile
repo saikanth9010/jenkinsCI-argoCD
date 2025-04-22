@@ -5,6 +5,11 @@ pipeline {
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
     }
   }
+
+  environment {
+    RECIPIENT = 'saikanth9010@gmail.com'  // change to your actual email
+  }
+
   
   stages {
   //   stage('Clean Workspace') {
@@ -73,4 +78,42 @@ pipeline {
         }
     }
   }
+
+  post {
+    success {
+      emailext(
+        subject: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: """
+          <p>Jenkins Pipeline Build <strong>SUCCEEDED</strong></p>
+          <ul>
+            <li><strong>Job:</strong> ${env.JOB_NAME}</li>
+            <li><strong>Build Number:</strong> ${env.BUILD_NUMBER}</li>
+            <li><strong>Status:</strong> SUCCESS</li>
+            <li><a href='${env.BUILD_URL}'>View Build</a></li>
+          </ul>
+        """,
+        to: "${RECIPIENT}",
+        mimeType: 'text/html'
+      )
+    }
+
+    failure {
+      emailext(
+        subject: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: """
+          <p>Jenkins Pipeline Build <strong>FAILED</strong></p>
+          <ul>
+            <li><strong>Job:</strong> ${env.JOB_NAME}</li>
+            <li><strong>Build Number:</strong> ${env.BUILD_NUMBER}</li>
+            <li><strong>Status:</strong> FAILURE</li>
+            <li><a href='${env.BUILD_URL}'>View Build Logs</a></li>
+          </ul>
+        """,
+        to: "${RECIPIENT}",
+        mimeType: 'text/html'
+      )
+    }
+  }
+
 }
+
