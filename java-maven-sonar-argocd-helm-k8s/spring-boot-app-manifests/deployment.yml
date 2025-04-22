@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: spring-boot-app
-        image: saikanth9010/jenkinsci-argocd:replaceImageTag
+        image: saikanth9010/jenkinsci-argocd:4
         ports:
         - containerPort: 8080
